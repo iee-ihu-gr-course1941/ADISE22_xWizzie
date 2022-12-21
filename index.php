@@ -17,7 +17,6 @@
     <script src='./main.js'></script>
 </head>
 
-
 <body onload="createInitialHand()">
     <div parent style="position: absolute; left: 35vh; top: 82vh;width: auto; height:auto;background-color: green;"">
         <div id="tile_1" name="tile_1" class="tileUnhovered" style="width: 75px;height: 150px;margin-inline:10px;float: right;" onmouseover="outline(this) " onmouseleave="unoutline(this)" onmouseleave="unoutline(this)">
