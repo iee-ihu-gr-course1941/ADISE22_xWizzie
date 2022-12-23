@@ -1,23 +1,83 @@
-img{
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+.tileHovered img {
     border-radius: 10px;
+    width: 65px;
+    height: 140px;
+    position: relative;
 }
 
-html, body{
+.tileUnhovered img {
+    border-radius: 10px;
+    width: 65px;
+    height: 140px;
+    position: relative;
+}
+
+html,
+body {
     margin: 0;
     height: 100%;
 
 }
-.tileHovered{
-    flex-basis: 75px;
 
+.tileHovered {
+    flex-basis: 75px;
     border: 5px;
     border-radius: 10px;
     border-style: solid;
     border-color: orange;
-}
 
-.tileUnhovered{
+    width: 75px;
+    height: 150px;
+    margin-inline: 10px;
+    float: right;
+}
+.tileUnhovered {
     border-radius: 10px;
     border: 5px solid transparent;
+
+    width: 75px;
+    height: 150px;
+    margin-inline: 10px;
+    float: right;
 }
 
+#board-div {
+    border-radius: 20px;
+    position: absolute;
+    left: 10%;
+    width: 80%;
+    height: 80vh;
+    background-color: bisque;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#hand-div {
+    position: absolute;
+    left: 30%;
+    top: 82vh;
+    width: auto;
+    height: auto;
+    background-color: green;
+}
+
+#user-div{
+    position: absolute;
+    top: 82vh;
+
+}
+
+#inner-board{
+    position: absolute;
+    background-color: cadetblue;
+    border-radius:10px ;
+    width: 25%;
+    height: 25%;
+    right: 0px;
+    bottom: 0px;
+}
