@@ -39,11 +39,25 @@ function createInitialHand() {
   }).then(response => {
     if (response.ok) {
       console.log('Strings inserted successfully');
+
     } else {
       console.log('Error inserting strings');
     }
   });
+
+
 }
+
+async function draw_board() {
+  await get_board_state()
+  console.log(bs_array)
+
+  for (let i = 0; i < bs_array.length; i++) {
+  }
+
+  
+}
+
 
 async function tryMove(element) {
   let elID = element.id
@@ -55,49 +69,34 @@ async function tryMove(element) {
 
   let board = document.getElementById('board-div')
   let toMove = document.getElementById(element.id)
-  await get_board_state().then((response =>{
-    check_rules(board,toMove)
+  await get_board_state().then((response => {
+    check_rules(board, toMove)
   }))
 }
 
-function check_rules(board,toMove){
-  if (bs_array.length==1){
+function check_rules(board, toMove) {
+  console.log(bs_array.length)
+  if (bs_array.length == 1) {
     board.appendChild(toMove)
     toMove.style = 'pointer-events: none; transform: rotate(90deg); position:relative;  margin: auto;text-align: center;'
-    
-    // var object = {
-    //   tile_id: element.id,
-    //   right_of:null,
-    //   left_of:null,
-    //   below_of:null,
-    //   above_of:null,
-    //   is_center: 1
-    // };
-    
-    // alert(JSON.stringify(object))
-    
-  }else{    
 
+    fetch('Library/add_to_board.php', {
+      method: 'POST',
+      body: JSON.stringify(toMove),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  } else {
+    
   }
-
-  // fetch('Library/add_to_board.php', {
-  //   method: 'POST',
-  //   body: JSON.stringify(""),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }).then(response => {
-  //   if (response.ok) {
-  //     console.log('Tile inserted successfully');
-  //   } else {
-  //     console.log('Error inserting tile');
-  //   }
-  // })
 }
 
 const bs_array = [];
 
 async function get_board_state() {
+  bs_array.length = 0
+
   const response = await fetch("Library/check_for_move.php", {
     method: 'POST',
     body: JSON.stringify(""),
@@ -145,7 +144,7 @@ function submit_username() {
   createInitialHand()
   document.getElementById('user-div').hidden = true
   document.getElementById('hand-div').hidden = false
-
+  draw_board()
 }
 
 
@@ -159,11 +158,11 @@ function test(element) {
   $.ajax({
     url: '/Library/check_for_move.php',
     type: 'post',
-    data: {functionname: 'check'},
-    success: function(output) {
+    data: { functionname: 'check' },
+    success: function (output) {
       console.log(output);
     },
-    error: function(output){
+    error: function (output) {
       console.log("And failed")
     }
   });

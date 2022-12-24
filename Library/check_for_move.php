@@ -4,6 +4,7 @@ if (isset($_POST['functionname'])) {
     $functionname = $_POST['functionname'];
     switch ($functionname) {
         case 'check':
+            $functionname = "";
             check();
             break;
     }
@@ -35,5 +36,5 @@ function return_board()
     }
 
     echo json_encode($rows_board);
-    return json_encode($rows_board);
+    //return json_encode($rows_board);
 }

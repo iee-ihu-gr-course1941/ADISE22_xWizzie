@@ -19,15 +19,17 @@
 </head>
 
 <body onloadstart="submit_username()" onbeforeunload="session_destroy()">
-    <div id="user-div" style="height: 100px;background-color: red;">
+    <div id="user-div">
         <input type="text" name="username" id="username-text-input" placeholder="Username" value="xWizzie" style="top: 20px;">
         <input type="submit" name="submit" id="username-submit-button" value="Submit" onclick="submit_username()">
     </div>
 
-    <div id="board-div">
-    <div id="inner-board" onclick="test(this)">
-
-    </div>
+    <div id="board-div" >
+        <div id="inner-board" onclick="test(this)">
+            <?php
+             //include_once('Library/add_to_board.php');
+            ?>
+        </div>
     </div>
 
     <div hidden="true" id="hand-div">
