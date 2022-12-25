@@ -1,8 +1,23 @@
 function outline(element) {
   element.className = "tileHovered"
 }
+
 function unoutline(element) {
   element.className = "tileUnhovered"
+}
+
+function generateRandomStrings() {
+  const strings = new Set();
+  while (strings.size < 7) {
+    const x = Math.floor(Math.random() * 6);
+    const y = Math.floor(Math.random() * 6);
+    if (x < y) {
+      strings.add(`${x}_${y}`);
+    } else {
+      strings.add(`${y}_${x}`);
+    }
+  }
+  return Array.from(strings);
 }
 
 let handIDList = new Array(7)
@@ -11,21 +26,11 @@ function createInitialHand() {
 
 
   // Fill the array with random numbers between 0 and 6
-  for (let i = 0; i < handArrayList.length; i++) {
-    for (let j = 0; j < handArrayList[i].length; j++) {
-      handArrayList[i][j] = Math.floor(Math.random() * 6);
-    }
-  }
+  handArrayList = generateRandomStrings()
 
-  for (i = 1; i <= 7; i++) {
-    if (handArrayList[i][0] > handArrayList[i][1]) {
-      document.getElementById('img_' + i).src = 'Images/' + handArrayList[i][1] + "_" + handArrayList[i][0] + ".png"
-      handIDList[i - 1] = handArrayList[i][1] + "_" + handArrayList[i][0]
-    } else {
-      document.getElementById('img_' + i).src = 'Images/' + handArrayList[i][0] + "_" + handArrayList[i][1] + ".png"
-      handIDList[i - 1] = handArrayList[i][0] + "_" + handArrayList[i][1]
-    }
-
+  for (i = 0; i < 7; i++) {
+    handIDList[i] = handArrayList[i]
+    document.getElementById('img_' + (i + 1)).src = 'Images/' + handIDList[i] + ".png"
   }
 
   var arrayJson = JSON.stringify(handIDList);
@@ -50,12 +55,9 @@ function createInitialHand() {
 
 async function draw_board() {
   await get_board_state()
-  console.log(bs_array)
 
-  for (let i = 0; i < bs_array.length; i++) {
-  }
+  //bs_array.forEach(bs => )
 
-  
 }
 
 
@@ -65,35 +67,214 @@ async function tryMove(element) {
 
   let tile_to_move = handIDList[handIdIndex]
 
-  //We have tile id make logic to check if there is a valid move and if there is update db and show board
-
   let board = document.getElementById('board-div')
   let toMove = document.getElementById(element.id)
-  await get_board_state().then((response => {
-    check_rules(board, toMove)
-  }))
+
+  await get_board_state()
+
+  let move = await check_available_moves(board, toMove)
+  //console.log(move)
+  if (move.length > 0) {
+    const boardDiv = document.querySelector('#board-div');
+    const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
+    toDelete.forEach(td => {
+      if (td.className == 'tileHoveredInBoard')
+        td.remove()
+    })
+    move.forEach(m => {
+      //console.log(m)
+      show_options(m, toMove)
+    })
+  }
+  // console.log(move)
+  // console.log(move.length)
 }
 
-function check_rules(board, toMove) {
-  console.log(bs_array.length)
-  if (bs_array.length == 1) {
-    board.appendChild(toMove)
-    toMove.style = 'pointer-events: none; transform: rotate(90deg); position:relative;  margin: auto;text-align: center;'
+async function show_options(move, toMove) {
+  await get_board_state()
+  console.log(move)
+  const boardDiv = document.querySelector('#board-div');
+  const divs = boardDiv.querySelectorAll('div:has(img)');
+  console.log(divs)
 
-    fetch('Library/add_to_board.php', {
+  if (move.rotate == 90) {
+    for (const div of divs) {
+      const img = div.querySelector('img');
+      const match_move_of = (img.src).substring(img.src.length - 7, img.src.length - 4);
+      if (move.of == match_move_of) {
+
+        const left = div.offsetLeft
+        const top = div.offsetTop
+        const right = div.offsetHeight
+
+        const newDiv = document.createElement('div');
+        newDiv.style.position = 'absolute';
+        newDiv.style.top = `${top}px`;
+        newDiv.style.borderRadius = '10px'
+        newDiv.id = '90 toright'
+        newDiv.style.transform = 'rotate(' + move.rotate + 'deg)';
+        newDiv.addEventListener('click', function () {
+          $.ajax({
+            url: '/Library/add_to_board.php',
+            type: 'post',
+            data: {
+              functionname: 'insert_left_of',
+              input_tile: move.which,
+              tile_on_board: move.of,
+              rotate: move.rotate
+            },
+            success: function (output) {
+              newDiv.className = 'tile_on_board'
+              //style="transform:rotate('+move.rotate+'deg);
+              newDiv.innerHTML = '<img src="Images/' + move.which + '.png">';
+              toMove.remove()
+              const boardDiv = document.querySelector('#board-div');
+              const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
+              toDelete.forEach(td => {
+                if (td.className == 'tileHoveredInBoard')
+                  td.remove()
+              })
+            },
+            error: function (output) {
+              console.log("And failed")
+            }
+          });
+        });
+        newDiv.className = 'tileHoveredInBoard'
+
+        if (move.where == 'to_right') {
+
+          //if this tile_id is not in any left_of on the board table show it
+
+          newDiv.style.left = `${left + right - 10}px`;
+
+        }
+        if (move.where == 'to_left') {
+          newDiv.style.left = `${left - right - 10}px`;
+
+
+        }
+
+        document.getElementById('board-div').appendChild(newDiv);
+      }
+    }
+  } else {
+    for (const div of divs) {
+      const img = div.querySelector('img');
+      const match_move_of = (img.src).substring(img.src.length - 7, img.src.length - 4);
+
+      if (move.of == match_move_of) {
+        const left = div.offsetLeft
+        const top = div.offsetTop
+        const right = div.offsetHeight
+
+        const newDiv = document.createElement('div');
+        newDiv.style.position = 'absolute';
+        newDiv.style.top = `${top}px`;
+        newDiv.style.borderRadius = '10px'
+        newDiv.id = '90 toright'
+        newDiv.style.transform = 'rotate(' + move.rotate + 'deg)';
+        if (move.where == 'to_right') {
+
+          newDiv.style.left = `${left + right - 10}px`;
+
+        }
+        if (move.where == 'to_left') {
+
+          newDiv.style.left = `${left - right - 10}px`;
+
+        }
+        newDiv.addEventListener('click', function () {
+          $.ajax({
+            url: '/Library/add_to_board.php',
+            type: 'post',
+            data: {
+              functionname: 'insert_left_of',
+              input_tile: move.which,
+              tile_on_board: move.of,
+              rotate: move.rotate
+            },
+            success: function (output) {
+              newDiv.className = 'tile_on_board'
+              //style="transform:rotate('+move.rotate+'deg);
+              newDiv.innerHTML = '<img src="Images/' + move.which + '.png">';
+              toMove.remove()
+              const boardDiv = document.querySelector('#board-div');
+              const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
+              toDelete.forEach(td => {
+                if (td.className == 'tileHoveredInBoard')
+                  td.remove()
+              })
+            },
+            error: function (output) {
+              console.log("And failed")
+            }
+          });
+        });
+
+        newDiv.className = 'tileHoveredInBoard'
+        document.getElementById('board-div').appendChild(newDiv);
+      }
+    }
+  }
+}
+
+async function check_available_moves(board, toMove) {
+  let data
+  if (bs_array[0].tile_id == null) {
+    const div = document.getElementById('board-div')
+    const width = div.offsetWidth;
+    const height = div.offsetHeight;
+
+    // Calculate the center point of the div
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const newDiv = document.createElement('div');
+    newDiv.style.position = 'absolute';
+    newDiv.style.top = centerY;
+    newDiv.style.left = centerX;
+    newDiv.style.borderRadius = '10px'
+    newDiv.style.transform = 'rotate(90deg)';
+    newDiv.className = 'tile_on_board'
+
+    const img = toMove.children[0].src.toString()
+    console.log(img.length)
+    const match_move_of = img.substring(img.length - 7, img.length - 4);
+
+    newDiv.innerHTML = '<img src="Images/' + match_move_of+ '.png">';
+
+    document.getElementById('board-div').appendChild(newDiv);
+    toMove.remove()
+
+
+    await fetch('Library/add_to_board.php', {
       method: 'POST',
-      body: JSON.stringify(toMove),
+      body: JSON.stringify(handIDList[toMove.id.charAt(toMove.id.length - 1) - 1]),
       headers: {
         'Content-Type': 'application/json'
       }
     })
   } else {
-    
+    await fetch('Library/add_to_board.php', {
+      method: 'POST',
+      body: JSON.stringify(handIDList[toMove.id.charAt(toMove.id.length - 1) - 1]),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(response => {
+      if (response.ok) {
+        data = response.json()
+      } else {
+        console.log('Error Adding Tile');
+      }
+    })
+    //console.log(data)
+    return data
   }
 }
 
 const bs_array = [];
-
 async function get_board_state() {
   bs_array.length = 0
 
@@ -103,8 +284,7 @@ async function get_board_state() {
     headers: {
       'Content-Type': 'application/json'
     }
-  });
-
+  })
   // Convert the response to JSON
   const data = await response.json()
   // Store the returned bs_array in an array
@@ -127,6 +307,7 @@ async function get_board_state() {
 }
 
 function submit_username() {
+  console.log(JSON.stringify(document.getElementById("username-text-input").value))
   let username = JSON.stringify(document.getElementById("username-text-input").value)
   fetch('Library/add_user.php', {
     method: 'POST',
@@ -155,15 +336,16 @@ function session_destroy() {
 }
 
 function test(element) {
-  $.ajax({
-    url: '/Library/check_for_move.php',
-    type: 'post',
-    data: { functionname: 'check' },
-    success: function (output) {
-      console.log(output);
-    },
-    error: function (output) {
-      console.log("And failed")
-    }
-  });
+
+  // $.ajax({
+  //   url: '/Library/check_for_move.php',
+  //   type: 'post',
+  //   data: { functionname: 'check' },
+  //   success: function (output) {
+  //     console.log(output);
+  //   },
+  //   error: function (output) {
+  //     console.log("And failed")
+  //   }
+  // });
 }

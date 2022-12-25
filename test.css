@@ -7,11 +7,13 @@
     position: relative;
 }
 
+
+
 .tileUnhovered img {
     border-radius: 10px;
     width: 65px;
     height: 140px;
-    position: relative;
+    /* position: relative; */
 }
 
 html,
@@ -34,6 +36,19 @@ body {
     float: right;
 }
 
+.tileHoveredInBoard {
+    flex-basis: 75px;
+    border: 5px;
+    border-radius: 10px;
+    border-style: solid;
+    border-color: orange;
+
+    width: 75px;
+    height: 150px;
+    margin-inline: 10px;
+    float: right;
+}
+
 .tileUnhovered {
     border-radius: 10px;
     border: 5px solid transparent;
@@ -44,6 +59,23 @@ body {
     float: right;
 }
 
+.tile_on_board {
+    border-radius: 10px;
+    border: 5px solid transparent;
+
+    width: 75px;
+    height: 150px;
+    margin-inline: 10px;
+    float: right;
+}
+
+.tile_on_board img {
+    border-radius: 10px;
+    width: 65px;
+    height: 140px;
+    /* position: relative; */
+}
+
 #board-div {
     border-radius: 20px;
     position: absolute;
@@ -52,10 +84,10 @@ body {
     height: 80vh;
     background-color: bisque;
 
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+    /* display: flex; 
+    flex-direction: row; 
+   justify-content: center;
+    align-items: center; */
 }
 
 #hand-div {

@@ -24,10 +24,11 @@
         <input type="submit" name="submit" id="username-submit-button" value="Submit" onclick="submit_username()">
     </div>
 
-    <div id="board-div" >
+    <div id="board-div">
+
         <div id="inner-board" onclick="test(this)">
             <?php
-             //include_once('Library/add_to_board.php');
+            //include_once('Library/add_to_board.php');
             ?>
         </div>
     </div>

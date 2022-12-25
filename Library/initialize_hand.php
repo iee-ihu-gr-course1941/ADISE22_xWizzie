@@ -26,3 +26,5 @@ include('update_last_action.php');
         }
     }
 
+    $sql = "DELETE FROM board";
+    mysqli_query($conn, $sql);

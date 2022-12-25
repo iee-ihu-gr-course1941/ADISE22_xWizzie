@@ -38,3 +38,18 @@ function return_board()
     echo json_encode($rows_board);
     //return json_encode($rows_board);
 }
+
+function search_for_to_left($id){
+    include_once('db_connect.php');
+
+    $sql = "SELECT * FROM board WHERE left_of = '$id'";
+    $res1 = mysqli_query($conn,$sql);
+    return json_encode(mysqli_fetch_all($res,MYSQLI_ASSOC));
+}
+function search_for_to_right($id){
+    include_once('db_connect.php');
+
+    $sql = "SELECT * FROM board WHERE NOT right_of = '$id'";
+    $res1 = mysqli_query($conn,$sql);
+    return json_encode(mysqli_fetch_all($res,MYSQLI_ASSOC));
+}
