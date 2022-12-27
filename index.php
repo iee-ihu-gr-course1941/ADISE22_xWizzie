@@ -25,7 +25,6 @@
     </div>
 
     <div id="board-div">
-
         <div id="inner-board" onclick="test(this)">
             <?php
             //include_once('Library/add_to_board.php');

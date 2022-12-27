@@ -20,7 +20,7 @@ if (isset($_POST['functionname'])) {
     $result = mysqli_query($conn, $sql);
     $numrows = mysqli_num_rows($result);
 
-    //$input_tile = '5_6';
+    //$input_tile = '0_6';
     $input_tile = json_decode(file_get_contents('php://input'), true);
 
     //Check the query res$result$result
@@ -50,103 +50,108 @@ if (isset($_POST['functionname'])) {
 }
 function check_where_to_place($board_tiles, $input_tile)
 {
+    include_once('db_connect.php');
 
     $off_board = explode("_", $input_tile);
     $found_array = [];
 
-    foreach ($board_tiles as $row) {
+    foreach ($board_tiles as $key => $row) {
         $on_board = explode("_", $row['tile_id']);
 
-        if (isset($row['orientation'])) {
-            if ($row['orientation'] == 90) {
-                foreach ($off_board as $index => $number) {
-                    //echo "Off index: ".$index." and number: ".$number."<br>";
 
-                    foreach ($on_board as $index_on => $number_on) {
-                        if ($number === $number_on) {
-                            //Returns 0-1 for where the same was found
-                            //ex if you try to put 2_1 and 1_1 is on board 
-                            //its going to return 1_0 as it found the 2nd number of input
-                            //at 1st input of tile on board
-
-                            //echo "On table off on line: ".$index." value: ".$number."On table on line: ".$index_on." value: ".$number_on."<br>";
-                            if ($index == 0 && $index_on == 0) {
-                                array_push($found_array, array(
-                                    "where" => "to_right",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => -90
-                                ));
-                            } elseif ($index == 0 && $index_on == 1) {
-                                array_push($found_array, array(
-                                    "where" => "to_left",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => 90
-                                ));
-                            } elseif ($index == 1 && $index_on == 0) {
-                                array_push($found_array, array(
-                                    "where" => "to_right",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => 90
-                                ));
-                            } elseif ($index == 1 && $index_on == 1) {
-                                array_push($found_array, array(
-                                    "where" => "to_left",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => -90
-                                ));
-                            }
-                        }
-                    }
-                }
-            }else{
-                foreach ($off_board as $index => $number) {
-                    //echo "Off index: ".$index." and number: ".$number."<br>";
-
-                    foreach ($on_board as $index_on => $number_on) {
-                        if ($number === $number_on) {
-                            //Returns 0-1 for where the same was found
-                            //ex if you try to put 2_1 and 1_1 is on board 
-                            //its going to return 1_0 as it found the 2nd number of input
-                            //at 1st input of tile on board
-
-                            //echo "On table off on line: ".$index." value: ".$number."On table on line: ".$index_on." value: ".$number_on."<br>";
-                            if ($index == 0 && $index_on == 0) {
-                                array_push($found_array, array(
-                                    "where" => "to_left",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => 90
-                                ));
-                            } elseif ($index == 0 && $index_on == 1) {
-                                array_push($found_array, array(
-                                    "where" => "to_right",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => -90
-                                ));
-                            } elseif ($index == 1 && $index_on == 0) {
-                                array_push($found_array, array(
-                                    "where" => "to_left",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => -90
-                                ));
-                            } elseif ($index == 1 && $index_on == 1) {
-                                array_push($found_array, array(
-                                    "where" => "to_right",
-                                    "of" => $row['tile_id'],
-                                    "which" => $input_tile,
-                                    "rotate" => 90
-                                ));
-                            }
+        if ($row['orientation'] == 90) {
+            foreach ($off_board as $index => $number) {
+                //echo "Off index: ".$index." and number: ".$number."<br>";
+                foreach ($on_board as $index_on => $number_on) {
+                    if ($number === $number_on) {
+                        if ($index == 0 && $index_on == 0) {
+                            array_push($found_array, array(
+                                "where" => "to_right",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => -90
+                            ));
+                        } elseif ($index == 0 && $index_on == 1) {
+                            array_push($found_array, array(
+                                "where" => "to_left",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => 90
+                            ));
+                        } elseif ($index == 1 && $index_on == 0) {
+                            array_push($found_array, array(
+                                "where" => "to_right",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => 90
+                            ));
+                        } elseif ($index == 1 && $index_on == 1) {
+                            array_push($found_array, array(
+                                "where" => "to_left",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => -90
+                            ));
                         }
                     }
                 }
             }
+        } else {
+            foreach ($off_board as $index => $number) {
+                //echo "Off index: ".$index." and number: ".$number."<br>";
+
+                foreach ($on_board as $index_on => $number_on) {
+                    if ($number === $number_on) {
+                        //Returns 0-1 for where the same was found
+                        //ex if you try to put 2_1 and 1_1 is on board 
+                        //its going to return 1_0 as it found the 2nd number of input
+                        //at 1st input of tile on board
+
+                        //echo "On table off on line: ".$index." value: ".$number."On table on line: ".$index_on." value: ".$number_on."<br>";
+                        if ($index == 0 && $index_on == 0) {
+                            array_push($found_array, array(
+                                "where" => "to_left",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => 90
+                            ));
+                        } elseif ($index == 0 && $index_on == 1) {
+                            array_push($found_array, array(
+                                "where" => "to_right",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => -90
+                            ));
+                        } elseif ($index == 1 && $index_on == 0) {
+                            array_push($found_array, array(
+                                "where" => "to_left",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => -90
+                            ));
+                        } elseif ($index == 1 && $index_on == 1) {
+                            array_push($found_array, array(
+                                "where" => "to_right",
+                                "of" => $row['tile_id'],
+                                "which" => $input_tile,
+                                "rotate" => 90
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+
+        $last_row = end($found_array);
+        if ($last_row != null) {
+            if ($row['left_of'] != null && $last_row['where'] == 'to_right') {
+                $x = array_pop($found_array);
+            }
+            if ($row['right_of'] != null && $last_row['where'] == 'to_left') {
+                $x = array_pop($found_array);
+            }
+
         }
     }
 

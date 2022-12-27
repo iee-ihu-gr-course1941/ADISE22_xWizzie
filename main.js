@@ -93,156 +93,124 @@ async function tryMove(element) {
 async function show_options(move, toMove) {
   await get_board_state()
   console.log(move)
-  const boardDiv = document.querySelector('#board-div');
-  const divs = boardDiv.querySelectorAll('div:has(img)');
-  console.log(divs)
+  
+  const boardDiv = document.getElementById('board-div');
 
-  if (move.rotate == 90) {
-    for (const div of divs) {
-      const img = div.querySelector('img');
-      const match_move_of = (img.src).substring(img.src.length - 7, img.src.length - 4);
-      if (move.of == match_move_of) {
+  const imgElement = boardDiv.querySelector(`div[id*='${move.of}']`);
+  
 
-        const left = div.offsetLeft
-        const top = div.offsetTop
-        const right = div.offsetHeight
+  const left = imgElement.offsetLeft
+  const top = imgElement.offsetTop
+  const right = imgElement.offsetHeight
 
-        const newDiv = document.createElement('div');
-        newDiv.style.position = 'absolute';
-        newDiv.style.top = `${top}px`;
-        newDiv.style.borderRadius = '10px'
-        newDiv.id = '90 toright'
-        newDiv.style.transform = 'rotate(' + move.rotate + 'deg)';
-        newDiv.addEventListener('click', function () {
-          $.ajax({
-            url: '/Library/add_to_board.php',
-            type: 'post',
-            data: {
-              functionname: 'insert_left_of',
-              input_tile: move.which,
-              tile_on_board: move.of,
-              rotate: move.rotate
-            },
-            success: function (output) {
-              newDiv.className = 'tile_on_board'
-              //style="transform:rotate('+move.rotate+'deg);
-              newDiv.innerHTML = '<img src="Images/' + move.which + '.png">';
-              toMove.remove()
-              const boardDiv = document.querySelector('#board-div');
-              const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
-              toDelete.forEach(td => {
-                if (td.className == 'tileHoveredInBoard')
-                  td.remove()
-              })
-            },
-            error: function (output) {
-              console.log("And failed")
-            }
-          });
-        });
-        newDiv.className = 'tileHoveredInBoard'
+  console.log(left+" "+top+" "+right)
 
-        if (move.where == 'to_right') {
+  const newDiv = document.createElement('div');
+  newDiv.style.position = 'absolute';
 
-          //if this tile_id is not in any left_of on the board table show it
+  //newDiv.style.top = `${top}px`;
 
-          newDiv.style.left = `${left + right - 10}px`;
+  newDiv.style.borderRadius = '10px'
+  newDiv.style.transform = 'rotate(' + move.rotate + 'deg)';
+  newDiv.className = 'tileHoveredInBoard'
+  newDiv.id = move.which.toString()
 
+  if (move.where == 'to_right') {
+    newDiv.style.left = `${left+right}px`
+    newDiv.style.top = `${top}px`
+    
+    newDiv.addEventListener('click', function () {
+      $.ajax({
+        url: '/Library/add_to_board.php',
+        type: 'post',
+        data: {
+          functionname: 'insert_right_of',
+          input_tile: move.which,
+          tile_on_board: move.of,
+          rotate: move.rotate
+        },
+        success: function (output) {
+          newDiv.className = 'tile_on_board'
+          //style="transform:rotate('+move.rotate+'deg);
+          newDiv.innerHTML = '<img src="Images/' + move.which + '.png">';
+          toMove.remove()
+          const boardDiv = document.querySelector('#board-div');
+          const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
+          toDelete.forEach(td => {
+            if (td.className == 'tileHoveredInBoard')
+              td.remove()
+          })
+        },
+        error: function (output) {
+          console.log("And failed")
         }
-        if (move.where == 'to_left') {
-          newDiv.style.left = `${left - right - 10}px`;
+      });
+    });
+  } else if (move.where == 'to_left') {
+    newDiv.style.left = `${left-right}px`;
+    newDiv.style.top = `${top}px`
 
-
+    newDiv.addEventListener('click', function () {
+      $.ajax({
+        url: '/Library/add_to_board.php',
+        type: 'post',
+        data: {
+          functionname: 'insert_left_of',
+          input_tile: move.which,
+          tile_on_board: move.of,
+          rotate: move.rotate
+        },
+        success: function (output) {
+          newDiv.className = 'tile_on_board'
+          //style="transform:rotate('+move.rotate+'deg);
+          newDiv.innerHTML = '<img src="Images/' + move.which + '.png">';
+          toMove.remove()
+          const boardDiv = document.querySelector('#board-div');
+          const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
+          toDelete.forEach(td => {
+            if (td.className == 'tileHoveredInBoard')
+              td.remove()
+          })
+        },
+        error: function (output) {
+          console.log("And failed")
         }
-
-        document.getElementById('board-div').appendChild(newDiv);
-      }
-    }
-  } else {
-    for (const div of divs) {
-      const img = div.querySelector('img');
-      const match_move_of = (img.src).substring(img.src.length - 7, img.src.length - 4);
-
-      if (move.of == match_move_of) {
-        const left = div.offsetLeft
-        const top = div.offsetTop
-        const right = div.offsetHeight
-
-        const newDiv = document.createElement('div');
-        newDiv.style.position = 'absolute';
-        newDiv.style.top = `${top}px`;
-        newDiv.style.borderRadius = '10px'
-        newDiv.id = '90 toright'
-        newDiv.style.transform = 'rotate(' + move.rotate + 'deg)';
-        if (move.where == 'to_right') {
-
-          newDiv.style.left = `${left + right - 10}px`;
-
-        }
-        if (move.where == 'to_left') {
-
-          newDiv.style.left = `${left - right - 10}px`;
-
-        }
-        newDiv.addEventListener('click', function () {
-          $.ajax({
-            url: '/Library/add_to_board.php',
-            type: 'post',
-            data: {
-              functionname: 'insert_left_of',
-              input_tile: move.which,
-              tile_on_board: move.of,
-              rotate: move.rotate
-            },
-            success: function (output) {
-              newDiv.className = 'tile_on_board'
-              //style="transform:rotate('+move.rotate+'deg);
-              newDiv.innerHTML = '<img src="Images/' + move.which + '.png">';
-              toMove.remove()
-              const boardDiv = document.querySelector('#board-div');
-              const toDelete = boardDiv.querySelectorAll('div:not([class*="img"])');
-              toDelete.forEach(td => {
-                if (td.className == 'tileHoveredInBoard')
-                  td.remove()
-              })
-            },
-            error: function (output) {
-              console.log("And failed")
-            }
-          });
-        });
-
-        newDiv.className = 'tileHoveredInBoard'
-        document.getElementById('board-div').appendChild(newDiv);
-      }
-    }
+      });
+    });
   }
+  document.getElementById('board-div').appendChild(newDiv);
+
 }
 
 async function check_available_moves(board, toMove) {
   let data
+  // console.log(bs_array)
   if (bs_array[0].tile_id == null) {
-    const div = document.getElementById('board-div')
-    const width = div.offsetWidth;
-    const height = div.offsetHeight;
+    const div = document.getElementById('board-div').getBoundingClientRect();
+    
+    const width = div.left + div.right;
+    const height = div.top + div.bottom;
 
     // Calculate the center point of the div
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const centerX = width / 2 - 140;
+    const centerY = height / 2 - 70;
 
     const newDiv = document.createElement('div');
-    newDiv.style.position = 'absolute';
-    newDiv.style.top = centerY;
-    newDiv.style.left = centerX;
+    newDiv.style.position = 'relative';
+    newDiv.style.top = centerY+"px";
+    newDiv.style.left = centerX+"px";
+    console.log(centerX +" "+centerY)
+
     newDiv.style.borderRadius = '10px'
     newDiv.style.transform = 'rotate(90deg)';
     newDiv.className = 'tile_on_board'
 
     const img = toMove.children[0].src.toString()
-    console.log(img.length)
+    //console.log(img.length)
     const match_move_of = img.substring(img.length - 7, img.length - 4);
-
-    newDiv.innerHTML = '<img src="Images/' + match_move_of+ '.png">';
+   
+    newDiv.id = match_move_of.toString()
+    newDiv.innerHTML = '<img src="Images/' + match_move_of + '.png">';
 
     document.getElementById('board-div').appendChild(newDiv);
     toMove.remove()

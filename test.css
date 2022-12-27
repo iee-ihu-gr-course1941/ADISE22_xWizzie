@@ -65,8 +65,8 @@ body {
 
     width: 75px;
     height: 150px;
-    margin-inline: 10px;
-    float: right;
+    /* margin-inline: 10px; */
+    /* float: right; */
 }
 
 .tile_on_board img {
