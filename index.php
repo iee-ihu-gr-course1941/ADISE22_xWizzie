@@ -18,7 +18,7 @@
     <script src='./main.js'></script>
 </head>
 
-<body onloadstart="submit_username()" onbeforeunload="session_destroy()">
+<body onload="start_update_board()" onbeforeunload="session_destroy()">
     <div id="user-div">
         <input type="text" name="username" id="username-text-input" placeholder="Username" value="xWizzie" style="top: 20px;">
         <input type="submit" name="submit" id="username-submit-button" value="Submit" onclick="submit_username()">
@@ -27,11 +27,13 @@
     <div id="board-div">
         <div id="inner-board" onclick="test(this)">
             <?php
-            //include_once('Library/add_to_board.php');
+
             ?>
         </div>
     </div>
-
+    <div id="error-div">
+        <p id='error-p'></p>
+    </div>
     <div hidden="true" id="hand-div">
         <div id="tile_1" name="tile_1" class="tileUnhovered" onmouseover="outline(this) " onmouseleave="unoutline(this)" onmouseleave="unoutline(this)" onclick="tryMove(this)">
             <img id="img_1" />

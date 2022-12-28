@@ -1,3 +1,76 @@
+let player_turn = null;
+
+async function start_update_board() {
+  if (!document.getElementById('hand-div').hidden) {
+    await update_board()
+    setInterval(await update_board, 5000)
+  }
+}
+
+async function update_board() {
+
+  const container = document.querySelector('#board-div');
+  const divsWithUnderscore = container.querySelectorAll('div[id*="_"]');
+  divsWithUnderscore.forEach(div => div.remove());
+
+  let tiles_on_board
+  await $.ajax({
+    url: '/Library/board_status.php',
+    type: 'post',
+    success: function (output) {
+      tiles_on_board = JSON.parse(output)
+    },
+    error: function (output) {
+      console.log("And failed")
+    }
+  });
+
+  console.log(tiles_on_board)
+  const board_div = document.getElementById('board-div').getBoundingClientRect();
+  const width = board_div.left + board_div.right;
+  const height = board_div.top + board_div.bottom;
+
+  // Calculate the center point of the div
+  const centerX = width / 2 - 140;
+  const centerY = height / 2 - 70;
+
+  let left = 0
+  let right = 0
+  let prev = null
+  let first = null
+  for (const element of tiles_on_board) {
+    let newDiv = document.createElement('div');
+    console.log(centerX)
+    if (element.is_center != 1) {
+      if (element.tile_id == prev.left_of) {
+        console.log('Hi')
+        right += 150
+        newDiv.style.left = centerX + right + "px"
+      }
+      if (element.tile_id == prev.right_of || element.tile_id == first.right_of) {
+        console.log('No hi')
+        left -= 150
+        newDiv.style.left = centerX + left + "px"
+      }
+    } else {
+      first = element
+      newDiv.style.left = centerX + "px";
+    }
+    newDiv.style.top = centerY + "px";
+    newDiv.style.position = 'absolute';
+
+    newDiv.id = element.tile_id
+    newDiv.style.borderRadius = '10px'
+    newDiv.style.transform = 'rotate(' + element.orientation + 'deg)'
+    newDiv.className = 'tile_on_board'
+    newDiv.innerHTML = '<img src="Images/' + element.tile_id + '.png">'
+    document.getElementById('board-div').appendChild(newDiv)
+
+    delete newDiv
+    prev = element
+  }
+}
+
 function outline(element) {
   element.className = "tileHovered"
 }
@@ -53,14 +126,6 @@ function createInitialHand() {
 
 }
 
-async function draw_board() {
-  await get_board_state()
-
-  //bs_array.forEach(bs => )
-
-}
-
-
 async function tryMove(element) {
   let elID = element.id
   let handIdIndex = elID.charAt(elID.length - 1)
@@ -82,28 +147,27 @@ async function tryMove(element) {
         td.remove()
     })
     move.forEach(m => {
-      //console.log(m)
       show_options(m, toMove)
     })
   }
-  // console.log(move)
-  // console.log(move.length)
+
 }
 
 async function show_options(move, toMove) {
+
   await get_board_state()
-  console.log(move)
-  
+  //console.log(move)
+
   const boardDiv = document.getElementById('board-div');
 
   const imgElement = boardDiv.querySelector(`div[id*='${move.of}']`);
-  
+
 
   const left = imgElement.offsetLeft
   const top = imgElement.offsetTop
   const right = imgElement.offsetHeight
 
-  console.log(left+" "+top+" "+right)
+  //console.log(left + " " + top + " " + right)
 
   const newDiv = document.createElement('div');
   newDiv.style.position = 'absolute';
@@ -116,9 +180,9 @@ async function show_options(move, toMove) {
   newDiv.id = move.which.toString()
 
   if (move.where == 'to_right') {
-    newDiv.style.left = `${left+right}px`
+    newDiv.style.left = `${left + right}px`
     newDiv.style.top = `${top}px`
-    
+
     newDiv.addEventListener('click', function () {
       $.ajax({
         url: '/Library/add_to_board.php',
@@ -140,6 +204,7 @@ async function show_options(move, toMove) {
             if (td.className == 'tileHoveredInBoard')
               td.remove()
           })
+          update_status()
         },
         error: function (output) {
           console.log("And failed")
@@ -147,7 +212,7 @@ async function show_options(move, toMove) {
       });
     });
   } else if (move.where == 'to_left') {
-    newDiv.style.left = `${left-right}px`;
+    newDiv.style.left = `${left - right}px`;
     newDiv.style.top = `${top}px`
 
     newDiv.addEventListener('click', function () {
@@ -170,6 +235,7 @@ async function show_options(move, toMove) {
           toDelete.forEach(td => {
             if (td.className == 'tileHoveredInBoard')
               td.remove()
+            update_status()
           })
         },
         error: function (output) {
@@ -179,71 +245,95 @@ async function show_options(move, toMove) {
     });
   }
   document.getElementById('board-div').appendChild(newDiv);
-
 }
 
+
 async function check_available_moves(board, toMove) {
-  let data
-  // console.log(bs_array)
-  if (bs_array[0].tile_id == null) {
-    const div = document.getElementById('board-div').getBoundingClientRect();
-    
-    const width = div.left + div.right;
-    const height = div.top + div.bottom;
-
-    // Calculate the center point of the div
-    const centerX = width / 2 - 140;
-    const centerY = height / 2 - 70;
-
-    const newDiv = document.createElement('div');
-    newDiv.style.position = 'relative';
-    newDiv.style.top = centerY+"px";
-    newDiv.style.left = centerX+"px";
-    console.log(centerX +" "+centerY)
-
-    newDiv.style.borderRadius = '10px'
-    newDiv.style.transform = 'rotate(90deg)';
-    newDiv.className = 'tile_on_board'
-
-    const img = toMove.children[0].src.toString()
-    //console.log(img.length)
-    const match_move_of = img.substring(img.length - 7, img.length - 4);
-   
-    newDiv.id = match_move_of.toString()
-    newDiv.innerHTML = '<img src="Images/' + match_move_of + '.png">';
-
-    document.getElementById('board-div').appendChild(newDiv);
-    toMove.remove()
-
-
-    await fetch('Library/add_to_board.php', {
-      method: 'POST',
-      body: JSON.stringify(handIDList[toMove.id.charAt(toMove.id.length - 1) - 1]),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+  await $.ajax({
+    url: '/Library/get_player_turn.php',
+    type: 'post',
+    data: { functionname: 'check' },
+    success: function (output) {
+      let array = JSON.parse(output)
+      player_turn = array[0]
+      sess_name = array[1]
+      //console.log(player_turn + " " + sess_name)
+    },
+    error: function (output) {
+      console.log("And failed")
+    }
+  });
+  if (player_turn != sess_name) {
+    document.getElementById('error-p').innerHTML = 'Wait for your turn.'
+    setTimeout(function () {
+      document.getElementById('error-p').innerHTML = ''
+    }, 5000);
   } else {
-    await fetch('Library/add_to_board.php', {
-      method: 'POST',
-      body: JSON.stringify(handIDList[toMove.id.charAt(toMove.id.length - 1) - 1]),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(response => {
-      if (response.ok) {
-        data = response.json()
-      } else {
-        console.log('Error Adding Tile');
-      }
-    })
-    //console.log(data)
-    return data
+    let data
+    // console.log(bs_array)
+    if (bs_array[0].tile_id == null) {
+      const div = document.getElementById('board-div').getBoundingClientRect();
+
+      const width = div.left + div.right;
+      const height = div.top + div.bottom;
+
+      // Calculate the center point of the div
+      const centerX = width / 2 - 140;
+      const centerY = height / 2 - 70;
+
+      const newDiv = document.createElement('div');
+      newDiv.style.position = 'relative';
+      newDiv.style.top = centerY + "px";
+      newDiv.style.left = centerX + "px";
+      //console.log(centerX + " " + centerY)
+
+      newDiv.style.borderRadius = '10px'
+      newDiv.style.transform = 'rotate(90deg)';
+      newDiv.className = 'tile_on_board'
+
+      const img = toMove.children[0].src.toString()
+      //console.log(img.length)
+      const match_move_of = img.substring(img.length - 7, img.length - 4);
+
+      newDiv.id = match_move_of.toString()
+      newDiv.innerHTML = '<img src="Images/' + match_move_of + '.png">';
+
+      document.getElementById('board-div').appendChild(newDiv);
+      toMove.remove()
+
+      await fetch('Library/add_to_board.php', {
+        method: 'POST',
+        body: JSON.stringify(handIDList[toMove.id.charAt(toMove.id.length - 1) - 1]),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+    } else {
+      await fetch('Library/add_to_board.php', {
+        method: 'POST',
+        body: JSON.stringify(handIDList[toMove.id.charAt(toMove.id.length - 1) - 1]),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(response => {
+        if (response.ok) {
+          data = response.json()
+        } else {
+          console.log('Error Adding Tile');
+        }
+      })
+
+      return data
+    }
   }
 }
 
 const bs_array = [];
 async function get_board_state() {
+
+
+
   bs_array.length = 0
 
   const response = await fetch("Library/check_for_move.php", {
@@ -292,8 +382,9 @@ function submit_username() {
   })
   createInitialHand()
   document.getElementById('user-div').hidden = true
+  document.getElementById('error-div').hidden = false
   document.getElementById('hand-div').hidden = false
-  draw_board()
+  start_update_board()
 }
 
 
@@ -303,17 +394,22 @@ function session_destroy() {
   })
 }
 
+function update_status() {
+  $.ajax({
+    url: '/Library/check_for_move.php',
+    type: 'post',
+    success: function (output) {
+      //console.log(output);
+    },
+    error: function (output) {
+      console.log("And failed")
+    }
+  });
+}
+
+
 function test(element) {
 
-  // $.ajax({
-  //   url: '/Library/check_for_move.php',
-  //   type: 'post',
-  //   data: { functionname: 'check' },
-  //   success: function (output) {
-  //     console.log(output);
-  //   },
-  //   error: function (output) {
-  //     console.log("And failed")
-  //   }
-  // });
+  update_board()
+
 }

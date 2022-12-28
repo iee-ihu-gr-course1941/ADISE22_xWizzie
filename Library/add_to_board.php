@@ -1,5 +1,8 @@
 <?php
+
 if (isset($_POST['functionname'])) {
+
+
     $functionname = $_POST['functionname'];
     switch ($functionname) {
         case 'insert_right_of':
@@ -16,36 +19,44 @@ if (isset($_POST['functionname'])) {
     include_once('db_connect.php');
     include('update_last_action.php');
 
-    $sql = "SELECT * FROM board WHERE ((right_of IS NULL) OR (left_of IS NULL))";
+    $sql = 'select status from game';
     $result = mysqli_query($conn, $sql);
-    $numrows = mysqli_num_rows($result);
+    $rows = mysqli_fetch_row($result);
 
-    //$input_tile = '0_6';
-    $input_tile = json_decode(file_get_contents('php://input'), true);
-
-    //Check the query res$result$result
-    if ($numrows > 0) {
-
-        $board_tiles = mysqli_fetch_all($result, MYSQLI_ASSOC);
-        $found_array = json_encode(check_where_to_place($board_tiles, $input_tile));
-
-        echo $found_array;
-
-        //ECHO VALUES FOUND TO CATCH IN JS AND DISPLAY OPTIONS
-
-    } else {
-        $sql = "INSERT INTO board(tile_id,is_center,orientation) VALUES('$input_tile',1,90)";
+    if ($rows[0] == 'started') {
+        $sql = "SELECT * FROM board WHERE ((right_of IS NULL) OR (left_of IS NULL))";
         $result = mysqli_query($conn, $sql);
+        $numrows = mysqli_num_rows($result);
 
-        $found_array = [];
-        array_push($found_array, array(
-            "where" => null,
-            "of" => null,
-            "which" => null,
-            "rotate" => 90
-        ));
+        //$input_tile = '0_6';
+        $input_tile = json_decode(file_get_contents('php://input'), true);
 
-        echo json_encode($found_array);
+        //Check the query res$result$result
+        if ($numrows > 0) {
+
+            $board_tiles = mysqli_fetch_all($result, MYSQLI_ASSOC);
+            $found_array = json_encode(check_where_to_place($board_tiles, $input_tile));
+
+            echo $found_array;
+
+            //ECHO VALUES FOUND TO CATCH IN JS AND DISPLAY OPTIONS
+
+        } else {
+            $sql = "INSERT INTO board(tile_id,is_center,orientation) VALUES('$input_tile',1,90)";
+            $result = mysqli_query($conn, $sql);
+
+            $found_array = [];
+            array_push($found_array, array(
+                "where" => null,
+                "of" => null,
+                "which" => null,
+                "rotate" => 90
+            ));
+
+            echo json_encode($found_array);
+        }
+    } else {
+        echo "<script>document.getElementById('error-p').innerHTML = 'Waiting for player'</script>";
     }
 }
 function check_where_to_place($board_tiles, $input_tile)
@@ -151,7 +162,6 @@ function check_where_to_place($board_tiles, $input_tile)
             if ($row['right_of'] != null && $last_row['where'] == 'to_left') {
                 $x = array_pop($found_array);
             }
-
         }
     }
 
@@ -181,6 +191,7 @@ function insert_right_of()
         $sql = "delete from hand where player_token = '$token' and tile_id = '$input_tile'";
         $results[] = mysqli_query($conn, $sql);
 
+        include('change_status.php');
         echo json_encode($results);
     } else {
 
@@ -211,6 +222,7 @@ function insert_left_of()
         $sql = "delete from hand where player_token = '$token' and tile_id = '$input_tile'";
         $results[] = mysqli_query($conn, $sql);
 
+        include('change_status.php');
         echo json_encode($results);
     } else {
 
