@@ -410,6 +410,6 @@ function update_status() {
 
 function test(element) {
 
-  update_board()
+  document.getElementById('error-p').innerHTML = 'Waiting for player'
 
 }

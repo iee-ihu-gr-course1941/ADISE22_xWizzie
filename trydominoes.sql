@@ -1,5 +1,5 @@
 -- --------------------------------------------------------
--- Host:                         localhost
+-- Host:                         127.0.0.1
 -- Server version:               10.4.27-MariaDB - mariadb.org binary distribution
 -- Server OS:                    Win64
 -- HeidiSQL Version:             12.3.0.6589
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `board` (
   `orientation` int(11) DEFAULT NULL,
   PRIMARY KEY (`order_played`),
   UNIQUE KEY `tile_id` (`tile_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=756 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=872 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table trydominoes.board: ~0 rows (approximately)
 
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `game` (
 
 -- Dumping data for table trydominoes.game: ~1 rows (approximately)
 INSERT INTO `game` (`player_turn`, `status`, `winner`, `row`) VALUES
-	('One', 'not active', NULL, 1);
+	('One', 'started', NULL, 1);
 
 -- Dumping structure for table trydominoes.hand
 CREATE TABLE IF NOT EXISTS `hand` (
@@ -103,6 +103,20 @@ CREATE TABLE IF NOT EXISTS `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table trydominoes.user: ~0 rows (approximately)
+
+-- Dumping structure for trigger trydominoes.update_player_turn
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER update_player_turn
+AFTER INSERT ON board
+FOR EACH ROW
+BEGIN
+    UPDATE game
+    SET player_turn = CASE WHEN player_turn = 'One' THEN 'Two' ELSE 'One' END
+    WHERE row = 1;
+END//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -23,7 +23,7 @@ if (isset($_POST['functionname'])) {
     $result = mysqli_query($conn, $sql);
     $rows = mysqli_fetch_row($result);
 
-    if ($rows[0] == 'started') {
+   // if ($rows[0] == 'started') {
         $sql = "SELECT * FROM board WHERE ((right_of IS NULL) OR (left_of IS NULL))";
         $result = mysqli_query($conn, $sql);
         $numrows = mysqli_num_rows($result);
@@ -55,9 +55,9 @@ if (isset($_POST['functionname'])) {
 
             echo json_encode($found_array);
         }
-    } else {
-        echo "<script>document.getElementById('error-p').innerHTML = 'Waiting for player'</script>";
-    }
+    // } else {
+    //     echo "<script>document.getElementById('error-p').innerHTML = 'Waiting for player'</script>";
+    // }
 }
 function check_where_to_place($board_tiles, $input_tile)
 {
