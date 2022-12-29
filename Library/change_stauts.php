@@ -19,5 +19,8 @@ if ($result == 0){
     }else{
         $sql = "UPDATE game SET winner='Two'";
     }
+    $result = mysqli_query($conn,$sql);
+    $sql = "DELETE FROM board";
+    $result = mysqli_query($conn,$sql);
 }
 
